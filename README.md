@@ -1,6 +1,6 @@
-# 🎱 Bingo — Marcador de Cartelas (PWA)
+# 🎱 MeuBingo — Marcador de Cartelas (PWA)
 
-App pessoal para facilitar a marcação em jogos de **bingo 75 bolas** (cartela 5×5, cabeçalho **B-I-N-G-O**, centro **FREE**).
+App pessoal para facilitar a marcação em jogos de **bingo 75 bolas** (cartela 5×5, cabeçalho **B-I-N-G-O**, centro **FREE**). Site: **meubingo.app**
 
 Colunas por faixa: **B** 1–15 · **I** 16–30 · **N** 31–45 · **G** 46–60 · **O** 61–75.
 

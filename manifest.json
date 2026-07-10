@@ -1,7 +1,7 @@
 {
-  "name": "Bingo — Marcador de Cartelas",
-  "short_name": "Bingo",
-  "description": "Escaneie cartelas de bingo 90 bolas e marque os números sorteados automaticamente.",
+  "name": "MeuBingo — Marcador de Cartelas",
+  "short_name": "MeuBingo",
+  "description": "Escaneie cartelas de bingo 75 bolas e marque os números sorteados automaticamente.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

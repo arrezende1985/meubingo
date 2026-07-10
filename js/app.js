@@ -88,7 +88,7 @@ function router() {
 // ---------- TELA 1: concursos ----------
 function renderHome() {
   clear();
-  app.appendChild(header('Bingo 75'));
+  app.appendChild(header('MeuBingo'));
   const concursos = store.listConcursos();
   const body = el('main', { class: 'container' });
 

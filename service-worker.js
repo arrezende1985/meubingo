@@ -3,7 +3,7 @@
 // online, sempre pega a versão mais nova; offline, cai no cache.
 // O Tesseract.js vem da CDN na 1ª leitura (não é interceptado aqui).
 
-const CACHE = 'bingo-shell-v5';
+const CACHE = 'bingo-shell-v6';
 const ASSETS = [
   './',
   './index.html',
