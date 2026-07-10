@@ -1,0 +1,15 @@
+# Cloudflare Pages — cabeçalhos HTTP
+# O service worker e o manifest não devem ficar em cache do navegador,
+# senão atualizações do app demoram a aparecer.
+
+/service-worker.js
+  Cache-Control: no-cache
+
+/manifest.json
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/
+  Cache-Control: no-cache
