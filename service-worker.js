@@ -3,7 +3,7 @@
 // online, sempre pega a versão mais nova; offline, cai no cache.
 // O Tesseract.js vem da CDN na 1ª leitura (não é interceptado aqui).
 
-const CACHE = 'bingo-shell-v10';
+const CACHE = 'bingo-shell-v11';
 const ASSETS = [
   './',
   './index.html',
@@ -42,9 +42,10 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (url.origin !== location.origin) return; // deixa a CDN do Tesseract com a rede
 
-  // network-first: busca na rede, atualiza o cache e cai no cache se offline.
+  // network-first: busca na rede (sem cache HTTP do navegador, p/ evitar assets
+  // desatualizados), atualiza o cache do SW e cai no cache se offline.
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-store' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {});

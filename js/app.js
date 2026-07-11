@@ -51,6 +51,8 @@ const ICONS = {
   share: '<path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
   menu: '<circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/>',
+  copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
 };
 
 function icon(name, { size = 22, cls = '' } = {}) {
@@ -167,6 +169,81 @@ function timeline() {
   ));
 }
 
+// ---------- doação (PIX) ----------
+const PIX_KEY = '74b99fb4-a1ab-47b2-9c5c-13b9753c35a6'; // chave aleatória (EVP)
+const PIX_NAME = 'MEU BINGO';
+const PIX_CITY = 'BRASIL';
+
+function pixEmv(id, value) { return id + String(value.length).padStart(2, '0') + value; }
+
+function pixCrc16(str) {
+  let crc = 0xffff;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc &= 0xffff;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+// gera o "copia e cola" (BR Code estático) da chave PIX
+function pixPayload() {
+  const mai = pixEmv('26', pixEmv('00', 'br.gov.bcb.pix') + pixEmv('01', PIX_KEY));
+  const body = pixEmv('00', '01') + mai + pixEmv('52', '0000') + pixEmv('53', '986') +
+    pixEmv('58', 'BR') + pixEmv('59', PIX_NAME) + pixEmv('60', PIX_CITY) + pixEmv('62', pixEmv('05', '***'));
+  const partial = body + '6304';
+  return partial + pixCrc16(partial);
+}
+
+function copyText(text, okMsg) {
+  const done = () => toast(okMsg || 'Copiado!', 'ok');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done) {
+  const ta = el('textarea', { style: 'position:fixed;opacity:0' });
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); done(); } catch {}
+  ta.remove();
+}
+
+function openDonate() {
+  if (document.querySelector('.modal-overlay')) return; // evita abrir duplicado
+  const overlay = el('div', { class: 'modal-overlay', onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
+  // estilos essenciais inline (garante a janela flutuante mesmo com CSS em cache antigo)
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.55)';
+  const card = el('div', { class: 'modal-card' }, [
+    el('button', { class: 'icon-btn modal-close', 'aria-label': 'Fechar', onclick: () => overlay.remove() }, [icon('close', { size: 18 })]),
+    el('div', { class: 'donate-heart' }, [icon('heart', { size: 30 })]),
+    el('h2', {}, ['Apoie o MeuBingo']),
+    el('p', { class: 'muted' }, ['O app é gratuito e sem anúncios. Se ele te ajudou, uma colaboração via PIX ajuda a manter o projeto. Obrigado! 💛']),
+    el('div', { class: 'pix-field' }, [
+      el('div', { class: 'pix-info' }, [
+        el('div', { class: 'pix-label' }, ['Chave PIX']),
+        el('div', { class: 'pix-value' }, [PIX_KEY]),
+      ]),
+      el('button', { class: 'btn btn-secondary', onclick: () => copyText(PIX_KEY, 'Chave copiada!') }, [icon('copy', { size: 18 }), 'Copiar']),
+    ]),
+    el('button', { class: 'btn btn-primary btn-block', onclick: () => copyText(pixPayload(), 'PIX copia e cola copiado!') }, [icon('copy', { size: 18 }), 'Copiar PIX copia e cola']),
+  ]);
+  card.style.cssText = 'position:relative;background:var(--card);color:var(--fg);border-radius:20px;padding:28px 22px;max-width:380px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,0.35);text-align:center';
+  overlay.appendChild(card);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+  document.body.appendChild(overlay);
+}
+
+// rodapé discreto de apoio (usado em alguns pontos do app)
+function donateFooter() {
+  return el('button', { class: 'donate-link', onclick: openDonate }, [icon('heart', { size: 15 }), 'Gostou? Apoie o app']);
+}
+
 // ---------- dica de instalação (PWA) ----------
 let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstallPrompt = e; });
@@ -274,6 +351,8 @@ function renderHome() {
   } else {
     body.appendChild(el('p', { class: 'muted center' }, ['Nenhum concurso ainda.']));
   }
+
+  body.appendChild(donateFooter());
   app.appendChild(body);
 }
 
@@ -316,6 +395,7 @@ function renderConcurso(id) {
     },
   }, [icon('play', { size: 16 }), c.sorteados.length ? 'Continuar sorteio' : 'Iniciar sorteio']));
 
+  body.appendChild(donateFooter());
   app.appendChild(body);
 }
 
