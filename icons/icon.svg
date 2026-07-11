@@ -1,19 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- fundo (full-bleed para ícone maskable) -->
-  <rect width="512" height="512" fill="#ffffff"/>
-  <!-- mini cartela 3x3: casas em grafite, uma marcada em azul -->
-  <g>
-    <!-- linha 0 -->
-    <rect x="106" y="106" width="88" height="88" rx="18" fill="#18181b"/>
-    <rect x="212" y="106" width="88" height="88" rx="18" fill="#2563eb"/>
-    <rect x="318" y="106" width="88" height="88" rx="18" fill="#18181b"/>
-    <!-- linha 1 -->
-    <rect x="106" y="212" width="88" height="88" rx="18" fill="#18181b"/>
-    <rect x="212" y="212" width="88" height="88" rx="18" fill="#18181b"/>
-    <rect x="318" y="212" width="88" height="88" rx="18" fill="#18181b"/>
-    <!-- linha 2 -->
-    <rect x="106" y="318" width="88" height="88" rx="18" fill="#18181b"/>
-    <rect x="212" y="318" width="88" height="88" rx="18" fill="#18181b"/>
-    <rect x="318" y="318" width="88" height="88" rx="18" fill="#18181b"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024"><defs>
+  <linearGradient id="oball" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FDA92B"/><stop offset="0.55" stop-color="#F5731E"/><stop offset="1" stop-color="#EC4E1C"/>
+  </linearGradient>
+  <linearGradient id="ohandle" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#F5731E"/><stop offset="1" stop-color="#FDA92B"/>
+  </linearGradient>
+  <linearGradient id="navyg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1B3F6B"/><stop offset="1" stop-color="#0E2A4A"/>
+  </linearGradient>
+</defs><rect x="0" y="0" width="1024" height="1024" rx="230.4" fill="url(#navyg)"/>
+<path d="M553.0 455.1 C 690.6 280.6, 899.5 216.7, 958.5 241.3 C 1007.6 265.8, 862.6 376.4, 683.2 533.7 C 639.0 570.6, 589.8 511.6, 553.0 455.1 Z" fill="url(#ohandle)"/>
+<circle cx="430.08" cy="563.2" r="245.76" fill="url(#oball)"/>
+<circle cx="430.08" cy="563.2" r="152.4" fill="#F5F2F7"/>
+<ellipse cx="361.3" cy="460.0" rx="54.1" ry="34.4" fill="#FFFFFF" opacity="0.55"/>
+<path d="M27 571V730H304V0H126V571Z" fill="#12325A" transform="translate(344.18,622.18) scale(0.16712,-0.16712)"/>
+<path d="M326 745Q474 745 540.5 646.0Q607 547 607 375Q607 201 540.5 102.0Q474 3 326 3Q178 3 111.5 102.0Q45 201 45 375Q45 547 111.5 646.0Q178 745 326 745ZM326 585Q257 585 235.0 530.5Q213 476 213 375Q213 307 221.0 262.5Q229 218 253.5 190.5Q278 163 326 163Q374 163 398.5 190.5Q423 218 431.0 262.5Q439 307 439 375Q439 476 417.0 530.5Q395 585 326 585Z" fill="#12325A" transform="translate(407.02,622.18) scale(0.16712,-0.16712)"/></svg>

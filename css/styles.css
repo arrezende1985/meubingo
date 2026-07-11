@@ -77,11 +77,7 @@ body {
   background: var(--bg-page);
 }
 .topbar h1 { font-size: 1.15rem; margin: 0; font-weight: 800; letter-spacing: -0.02em; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar .logo {
-  width: 40px; height: 40px; border-radius: 12px; flex: 0 0 auto;
-  background: var(--grad-accent); color: #fff; box-shadow: var(--shadow-accent);
-  display: flex; align-items: center; justify-content: center; font-size: 1.15rem;
-}
+.topbar .logo { width: 40px; height: 40px; border-radius: 11px; flex: 0 0 auto; display: block; box-shadow: var(--shadow); }
 /* botões flutuantes da topbar (voltar / tema) */
 .topbar .icon-btn {
   background: var(--card); box-shadow: var(--shadow);
@@ -384,14 +380,14 @@ body {
 .install-card { display: flex; flex-direction: column; gap: 14px; }
 .install-head { display: flex; align-items: flex-start; gap: 12px; }
 .install-head .ci-body strong { display: block; font-weight: 800; margin-bottom: 2px; }
-.install-head .ci-lead { color: var(--accent); }
 .install-head .icon-btn { flex: 0 0 auto; margin: -4px -4px 0 0; }
-.install-steps { display: flex; flex-direction: column; gap: 12px; }
-.install-step { display: flex; align-items: center; gap: 12px; font-size: 0.92rem; color: var(--fg); font-weight: 600; }
-.install-ic {
-  flex: 0 0 auto; width: 32px; height: 32px; border-radius: 10px;
-  background: var(--accent-soft); color: var(--accent);
-  display: flex; align-items: center; justify-content: center;
+.install-badge { flex: 0 0 auto; border-radius: 11px; box-shadow: var(--shadow); }
+.install-illus { position: relative; }
+.install-illus-img { display: block; width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+.install-illus-close {
+  position: absolute; top: 8px; right: 8px;
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--card); box-shadow: var(--shadow);
 }
 
 /* ---------- timeline "como funciona" ---------- */
@@ -477,6 +473,21 @@ body {
   .timeline-step, .timeline-step::before { animation: none; opacity: 1; transform: none; }
   .timeline-step::before { transform: scaleY(1); }
 }
+
+/* barra de atualização (nova versão do app) */
+.update-bar {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 18px);
+  transform: translate(-50%, 160%); z-index: 300;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--fg); color: #fff; padding: 10px 10px 10px 18px; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28); max-width: calc(100% - 24px);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.update-bar.show { transform: translate(-50%, 0); }
+.update-txt { font-weight: 700; font-size: 0.92rem; white-space: nowrap; }
+.update-bar .btn { padding: 9px 15px; font-size: 0.88rem; }
+.update-bar .icon-btn { color: rgba(255, 255, 255, 0.65); width: 34px; height: 34px; }
+.update-bar .icon-btn:active { background: rgba(255, 255, 255, 0.12); }
 
 /* toast */
 .toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); z-index: 200; background: var(--fg); color: var(--bg-page); padding: 11px 18px; border-radius: 10px; box-shadow: var(--shadow); opacity: 0; transition: opacity 0.25s ease, bottom 0.25s ease; max-width: 90%; font-size: 0.9rem; }

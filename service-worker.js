@@ -3,7 +3,7 @@
 // online, sempre pega a versão mais nova; offline, cai no cache.
 // O Tesseract.js vem da CDN na 1ª leitura (não é interceptado aqui).
 
-const CACHE = 'bingo-shell-v6';
+const CACHE = 'bingo-shell-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -14,10 +14,20 @@ const ASSETS = [
   './js/storage.js',
   './js/ocr.js',
   './icons/icon.svg',
+  './icons/icon-180.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/install-card.png',
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // não chama skipWaiting: o novo SW fica "esperando" até o usuário aceitar atualizar
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+});
+
+// o app pede a ativação quando o usuário toca em "Atualizar"
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {

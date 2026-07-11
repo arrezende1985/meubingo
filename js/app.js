@@ -118,7 +118,7 @@ function header(title, backHash) {
     },
   }, [icon(THEME_ICON[getTheme()], { size: 20 })]);
   return el('header', { class: 'topbar' }, [
-    backHash ? el('button', { class: 'icon-btn', onclick: () => go(backHash), 'aria-label': 'Voltar' }, [icon('back', { size: 22 })]) : el('span', { class: 'logo' }, [icon('ball', { size: 22 })]),
+    backHash ? el('button', { class: 'icon-btn', onclick: () => go(backHash), 'aria-label': 'Voltar' }, [icon('back', { size: 22 })]) : el('img', { class: 'logo', src: './icons/icon.svg', alt: 'MeuBingo', width: '40', height: '40' }),
     el('h1', {}, [title]),
     themeBtn,
   ]);
@@ -175,32 +175,25 @@ function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
-function installStep(ic, texto) {
-  return el('div', { class: 'install-step' }, [
-    el('span', { class: 'install-ic' }, [icon(ic, { size: 18 })]),
-    el('span', {}, [texto]),
-  ]);
+function dismissInstall(node) {
+  localStorage.setItem('bingo.hideInstall', '1');
+  node.remove();
 }
 
 function installHint() {
   if (isStandalone() || localStorage.getItem('bingo.hideInstall') === '1') return null;
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-  const card = el('section', { class: 'card install-card' });
-  card.appendChild(el('div', { class: 'install-head' }, [
-    el('div', { class: 'ci-lead' }, [icon('download', { size: 22 })]),
-    el('div', { class: 'ci-body' }, [
-      el('strong', {}, ['Instale como app']),
-      el('span', { class: 'muted small' }, ['Fica na tela inicial e abre em tela cheia, sem a barra do navegador.']),
-    ]),
-    el('button', {
-      class: 'icon-btn', 'aria-label': 'Dispensar',
-      onclick: () => { localStorage.setItem('bingo.hideInstall', '1'); card.remove(); },
-    }, [icon('close', { size: 18 })]),
-  ]));
-
+  // Android/desktop: usa o prompt nativo do navegador
   if (deferredInstallPrompt) {
+    const card = el('section', { class: 'card install-card' });
+    card.appendChild(el('div', { class: 'install-head' }, [
+      el('img', { class: 'install-badge', src: './icons/icon.svg', alt: '', width: '44', height: '44' }),
+      el('div', { class: 'ci-body' }, [
+        el('strong', {}, ['Instalar Meu Bingo']),
+        el('span', { class: 'muted small' }, ['Fica na tela inicial e abre em tela cheia, sem a barra do navegador.']),
+      ]),
+      el('button', { class: 'icon-btn', 'aria-label': 'Dispensar', onclick: () => dismissInstall(card) }, [icon('close', { size: 18 })]),
+    ]));
     card.appendChild(el('button', {
       class: 'btn btn-primary btn-block',
       onclick: async () => {
@@ -210,16 +203,15 @@ function installHint() {
         card.remove();
       },
     }, [icon('download', { size: 18 }), 'Instalar agora']));
-  } else {
-    card.appendChild(el('div', { class: 'install-steps' }, isIOS ? [
-      installStep('share', 'No Safari, toque no botão Compartilhar.'),
-      installStep('plus', 'Escolha "Adicionar à Tela de Início".'),
-    ] : [
-      installStep('menu', 'No Chrome, toque no menu (3 pontinhos).'),
-      installStep('plus', 'Escolha "Instalar app" ou "Adicionar à tela inicial".'),
-    ]));
+    return card;
   }
-  return card;
+
+  // iOS (e demais): usa o card ilustrado com o passo a passo
+  const wrap = el('section', { class: 'install-illus' }, [
+    el('img', { class: 'install-illus-img', src: './icons/install-card.png', alt: 'Para instalar: toque em Compartilhar e depois em Adicionar à Tela de Início.' }),
+    el('button', { class: 'icon-btn install-illus-close', 'aria-label': 'Dispensar', onclick: () => dismissInstall(wrap) }, [icon('close', { size: 18 })]),
+  ]);
+  return wrap;
 }
 
 // ---------- TELA 1: concursos ----------
@@ -941,8 +933,51 @@ function anunciarVitoria(cartela, padraoKey, res) {
   if (cheia) setTimeout(() => overlay.remove(), 6000);
 }
 
+// ---------- atualização do app (novo service worker disponível) ----------
+let updatePromptShown = false;
+function showUpdatePrompt(reg) {
+  if (updatePromptShown) return;
+  updatePromptShown = true;
+  const bar = el('div', { class: 'update-bar' }, [
+    el('span', { class: 'update-txt' }, ['Nova versão disponível']),
+    el('button', {
+      class: 'btn btn-primary', onclick: (e) => {
+        e.currentTarget.textContent = 'Atualizando…';
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        else location.reload();
+      },
+    }, ['Atualizar']),
+    el('button', { class: 'icon-btn', 'aria-label': 'Agora não', onclick: () => bar.remove() }, [icon('close', { size: 18 })]),
+  ]);
+  document.body.appendChild(bar);
+  requestAnimationFrame(() => bar.classList.add('show'));
+}
+
+function setupServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    location.reload();
+  });
+  navigator.serviceWorker.register('./service-worker.js').then((reg) => {
+    if (reg.waiting && navigator.serviceWorker.controller) showUpdatePrompt(reg);
+    reg.addEventListener('updatefound', () => {
+      const sw = reg.installing;
+      if (!sw) return;
+      sw.addEventListener('statechange', () => {
+        if (sw.state === 'installed' && navigator.serviceWorker.controller) showUpdatePrompt(reg);
+      });
+    });
+    const check = () => reg.update().catch(() => {});
+    check();
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+  }).catch(() => {});
+}
+
 // ---------- bootstrap ----------
 applyTheme(getTheme());
 window.addEventListener('hashchange', router);
 router();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+setupServiceWorker();
