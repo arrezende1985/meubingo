@@ -85,6 +85,26 @@ function router() {
   return renderHome();
 }
 
+// ---------- timeline "como funciona" ----------
+const COMO_FUNCIONA = [
+  ['📝', 'Crie o concurso', 'Dê um nome ao jogo (ex: "Bingo da Festa Junina").'],
+  ['🎫', 'Cadastre as cartelas', 'Escaneie com a câmera (OCR) ou digite os números.'],
+  ['🎱', 'Registre os sorteados', 'Digite cada número que sai — o app marca em todas as cartelas.'],
+  ['🏆', 'Acompanhe as vitórias', 'O app avisa em tela cheia quando bate BINGO ou cartela cheia.'],
+];
+
+function timeline() {
+  return el('ol', { class: 'timeline' }, COMO_FUNCIONA.map(([emoji, titulo, desc], i) =>
+    el('li', { class: 'timeline-step' }, [
+      el('div', { class: 'timeline-num' }, [String(i + 1)]),
+      el('div', { class: 'timeline-body' }, [
+        el('strong', {}, [`${emoji} ${titulo}`]),
+        el('span', {}, [desc]),
+      ]),
+    ])
+  ));
+}
+
 // ---------- TELA 1: concursos ----------
 function renderHome() {
   clear();
@@ -105,6 +125,19 @@ function renderHome() {
       return el('div', { class: 'stack' }, [input, btn]);
     })(),
   ]));
+
+  // passo-a-passo: aberto para quem chega pela 1ª vez, recolhido para quem já usa
+  if (concursos.length) {
+    body.appendChild(el('details', { class: 'card how-to' }, [
+      el('summary', {}, ['Como funciona']),
+      timeline(),
+    ]));
+  } else {
+    body.appendChild(el('section', { class: 'card how-to' }, [
+      el('h3', { class: 'section-title' }, ['Como funciona']),
+      timeline(),
+    ]));
+  }
 
   if (concursos.length) {
     const lista = el('section', { class: 'stack' }, [el('h3', { class: 'section-title' }, ['Concursos'])]);
@@ -341,6 +374,19 @@ function rotateCanvas(src, deg) {
   return cvs;
 }
 
+// moldura-guia no formato da cartela (cabeçalho B-I-N-G-O + grade 5×5)
+function buildGuideFrame() {
+  const bingo = el('div', { class: 'guide-bingo' }, COL_LABELS.map((l) => el('span', {}, [l])));
+  const grid = el('div', { class: 'guide-grid' });
+  for (let i = 0; i < ROWS * COLS; i++) {
+    const isCenter = i === CENTER.r * COLS + CENTER.c;
+    grid.appendChild(el('span', { class: isCenter ? 'free' : '' }, [isCenter ? '★' : '']));
+  }
+  const frame = el('div', { class: 'guide-frame' }, [bingo, grid]);
+  ['tl', 'tr', 'bl', 'br'].forEach((k) => frame.appendChild(el('div', { class: `guide-corner ${k}` })));
+  return el('div', { class: 'guide-inner' }, [frame, el('div', { class: 'guide-hint' }, ['Encaixe a cartela na moldura'])]);
+}
+
 function renderScan(id) {
   const c = store.getConcurso(id);
   if (!c) return go('/');
@@ -362,7 +408,7 @@ function renderScan(id) {
 
   if (ocr.ocrDisponivel()) {
     const video = el('video', { class: 'camera', autoplay: '', playsinline: '', muted: '' });
-    const guide = el('div', { class: 'camera-guide' }, [el('span', {}, ['Enquadre a cartela'])]);
+    const guide = el('div', { class: 'camera-guide' }, [buildGuideFrame()]);
     const camWrap = el('div', { class: 'camera-wrap' }, [video, guide]);
     let stream = null;
     const stopCam = () => { if (stream) stream.getTracks().forEach((t) => t.stop()); };
