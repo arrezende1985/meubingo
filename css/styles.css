@@ -290,11 +290,11 @@ body {
 .pattern-chip.active { background: var(--fg); color: var(--bg-page); border-color: var(--fg); }
 .pattern-desc { margin-top: 2px; }
 
-/* sorteio: banner da última bola */
+/* sorteio: banner da última bola (card neutro, a bola laranja é o destaque) */
 .live-banner {
   display: flex; align-items: center; gap: 14px;
-  background: var(--fg); color: #fff; border-radius: var(--radius-lg);
-  padding: 16px 18px; box-shadow: var(--shadow);
+  background: var(--card); color: var(--fg); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow);
 }
 .live-ball {
   flex: 0 0 auto; width: 56px; height: 56px; border-radius: 50%;
@@ -304,10 +304,8 @@ body {
 .live-ball.just { animation: pop 0.4s ease; }
 .live-info { flex: 1; min-width: 0; }
 .live-title { font-weight: 800; font-size: 1.08rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.live-sub { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; margin-top: 2px; }
+.live-sub { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
 .live-banner .ring { flex: 0 0 auto; }
-.live-banner .ring-track { stroke: rgba(255, 255, 255, 0.18); }
-.live-banner .ring-text { fill: #fff; }
 
 /* anel de progresso */
 .ring-track { stroke: var(--subtle); }

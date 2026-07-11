@@ -806,6 +806,7 @@ function renderSorteio(id) {
   const anunciado = new Set(); // cartelas já anunciadas no padrão atual
 
   body.appendChild(banner);
+  body.appendChild(ultimos);
   body.appendChild(controls);
   body.appendChild(el('section', { class: 'pattern-picker' }, [
     el('div', { class: 'section-title' }, ['Padrão que vale']),
@@ -813,7 +814,6 @@ function renderSorteio(id) {
     patternDesc,
   ]));
   body.appendChild(winPanel);
-  body.appendChild(ultimos);
   body.appendChild(el('h3', { class: 'section-title' }, ['Cartelas']));
   body.appendChild(cartelasLive);
   body.appendChild(el('details', { class: 'board-details' }, [
@@ -866,10 +866,12 @@ function renderSorteio(id) {
     });
 
     ultimos.innerHTML = '';
-    ultimos.appendChild(el('div', { class: 'muted small' }, [`${ordem.length} sorteado(s)`]));
-    const chips = el('div', { class: 'chips' });
-    ordem.slice(-8).reverse().forEach((n, i) => chips.appendChild(el('span', { class: `ball-chip ${i === 0 && n === novo ? 'just' : ''}` }, [String(n)])));
-    ultimos.appendChild(chips);
+    if (ordem.length) {
+      ultimos.appendChild(el('div', { class: 'muted small' }, ['Últimas bolas']));
+      const chips = el('div', { class: 'chips' });
+      ordem.slice(-10).reverse().forEach((n, i) => chips.appendChild(el('span', { class: `ball-chip ${i === 0 && n === novo ? 'just' : ''}` }, [String(n)])));
+      ultimos.appendChild(chips);
+    }
 
     cartelasLive.innerHTML = '';
     const ehCheia = padrao === 'cheia';
