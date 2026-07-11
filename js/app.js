@@ -27,10 +27,72 @@ function el(tag, props = {}, children = []) {
 function clear() { app.innerHTML = ''; }
 function go(hash) { location.hash = hash; }
 
+// ---------- ícones (SVG inline, herdam currentColor) ----------
+const ICONS = {
+  ball: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="9.5" r="2.6"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.6V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22"/><path d="M14 14.6V17c0 .6.5 1 1 1.2 1.2.6 2 2 2 4"/><path d="M18 2H6v7a6 6 0 0 0 12 0Z"/>',
+  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l2-3h6l2 3h3a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+  trash: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
+  rotate: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+  play: '<path d="M7 4l13 8-13 8Z" fill="currentColor" stroke="none"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  sun: '<circle cx="12" cy="12" r="4.2"/><path d="M12 1.5v2.5M12 20v2.5M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M1.5 12h2.5M20 12h2.5M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
+  auto: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" stroke="none"/>',
+  check: '<path d="M20 6L9 17l-5-5"/>',
+  backspace: '<path d="M20 5H8.5a2 2 0 0 0-1.5.7L2 12l5 6.3a2 2 0 0 0 1.5.7H20a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/><path d="M17 9l-5 6M12 9l5 6"/>',
+  download: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>',
+  close: '<path d="M18 6L6 18M6 6l12 12"/>',
+  share: '<path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
+  menu: '<circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+};
+
+function icon(name, { size = 22, cls = '' } = {}) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', size);
+  svg.setAttribute('height', size);
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  if (cls) svg.setAttribute('class', cls);
+  svg.innerHTML = ICONS[name] || '';
+  return svg;
+}
+
+// anel de progresso (donut SVG)
+function ring(pct, { size = 52, stroke = 6, text = null } = {}) {
+  const p = Math.max(0, Math.min(100, pct));
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const off = circ * (1 - p / 100);
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', size);
+  svg.setAttribute('height', size);
+  svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+  svg.setAttribute('class', 'ring');
+  svg.innerHTML =
+    `<circle class="ring-track" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke-width="${stroke}"/>` +
+    `<circle class="ring-prog" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke-width="${stroke}" ` +
+    `stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="round" ` +
+    `transform="rotate(-90 ${size / 2} ${size / 2})"/>` +
+    (text != null ? `<text class="ring-text" x="50%" y="50%" text-anchor="middle" dominant-baseline="central">${text}</text>` : '');
+  return svg;
+}
+
 // ---------- tema (claro / escuro / automático) ----------
 const THEME_KEY = 'bingo.theme';
 const THEME_ORDER = ['auto', 'light', 'dark'];
-const THEME_ICON = { auto: '🌗', light: '☀️', dark: '🌙' };
+const THEME_ICON = { auto: 'auto', light: 'sun', dark: 'moon' };
 const THEME_LABEL = { auto: 'Automático', light: 'Claro', dark: 'Escuro' };
 
 function getTheme() { return localStorage.getItem(THEME_KEY) || 'auto'; }
@@ -50,13 +112,13 @@ function header(title, backHash) {
     class: 'icon-btn', 'aria-label': 'Alternar tema', title: `Tema: ${THEME_LABEL[getTheme()]}`,
     onclick: (e) => {
       const t = cycleTheme();
-      e.currentTarget.textContent = THEME_ICON[t];
+      e.currentTarget.replaceChildren(icon(THEME_ICON[t], { size: 20 }));
       e.currentTarget.title = `Tema: ${THEME_LABEL[t]}`;
       toast(`Tema: ${THEME_LABEL[t]}`, 'ok');
     },
-  }, [THEME_ICON[getTheme()]]);
+  }, [icon(THEME_ICON[getTheme()], { size: 20 })]);
   return el('header', { class: 'topbar' }, [
-    backHash ? el('button', { class: 'icon-btn', onclick: () => go(backHash), 'aria-label': 'Voltar' }, ['‹']) : el('span', { class: 'logo' }, ['🎱']),
+    backHash ? el('button', { class: 'icon-btn', onclick: () => go(backHash), 'aria-label': 'Voltar' }, [icon('back', { size: 22 })]) : el('span', { class: 'logo' }, [icon('ball', { size: 22 })]),
     el('h1', {}, [title]),
     themeBtn,
   ]);
@@ -87,22 +149,77 @@ function router() {
 
 // ---------- timeline "como funciona" ----------
 const COMO_FUNCIONA = [
-  ['📝', 'Crie o concurso', 'Dê um nome ao jogo (ex: "Bingo da Festa Junina").'],
-  ['🎫', 'Cadastre as cartelas', 'Escaneie com a câmera (OCR) ou digite os números.'],
-  ['🎱', 'Registre os sorteados', 'Digite cada número que sai — o app marca em todas as cartelas.'],
-  ['🏆', 'Acompanhe as vitórias', 'O app avisa em tela cheia quando bate BINGO ou cartela cheia.'],
+  ['edit', 'Crie o concurso', 'Dê um nome ao jogo (ex: "Bingo da Festa Junina").'],
+  ['grid', 'Cadastre as cartelas', 'Escaneie com a câmera (OCR) ou digite os números.'],
+  ['target', 'Registre os sorteados', 'Digite cada número que sai e o app marca em todas as cartelas.'],
+  ['trophy', 'Acompanhe as vitórias', 'O app avisa em tela cheia quando bate BINGO ou cartela cheia.'],
 ];
 
 function timeline() {
-  return el('ol', { class: 'timeline' }, COMO_FUNCIONA.map(([emoji, titulo, desc], i) =>
+  return el('ol', { class: 'timeline' }, COMO_FUNCIONA.map(([ic, titulo, desc], i) =>
     el('li', { class: 'timeline-step' }, [
       el('div', { class: 'timeline-num' }, [String(i + 1)]),
       el('div', { class: 'timeline-body' }, [
-        el('strong', {}, [`${emoji} ${titulo}`]),
+        el('strong', {}, [icon(ic, { size: 19, cls: 'ti-icon' }), titulo]),
         el('span', {}, [desc]),
       ]),
     ])
   ));
+}
+
+// ---------- dica de instalação (PWA) ----------
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstallPrompt = e; });
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function installStep(ic, texto) {
+  return el('div', { class: 'install-step' }, [
+    el('span', { class: 'install-ic' }, [icon(ic, { size: 18 })]),
+    el('span', {}, [texto]),
+  ]);
+}
+
+function installHint() {
+  if (isStandalone() || localStorage.getItem('bingo.hideInstall') === '1') return null;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  const card = el('section', { class: 'card install-card' });
+  card.appendChild(el('div', { class: 'install-head' }, [
+    el('div', { class: 'ci-lead' }, [icon('download', { size: 22 })]),
+    el('div', { class: 'ci-body' }, [
+      el('strong', {}, ['Instale como app']),
+      el('span', { class: 'muted small' }, ['Fica na tela inicial e abre em tela cheia, sem a barra do navegador.']),
+    ]),
+    el('button', {
+      class: 'icon-btn', 'aria-label': 'Dispensar',
+      onclick: () => { localStorage.setItem('bingo.hideInstall', '1'); card.remove(); },
+    }, [icon('close', { size: 18 })]),
+  ]));
+
+  if (deferredInstallPrompt) {
+    card.appendChild(el('button', {
+      class: 'btn btn-primary btn-block',
+      onclick: async () => {
+        deferredInstallPrompt.prompt();
+        try { await deferredInstallPrompt.userChoice; } catch {}
+        deferredInstallPrompt = null;
+        card.remove();
+      },
+    }, [icon('download', { size: 18 }), 'Instalar agora']));
+  } else {
+    card.appendChild(el('div', { class: 'install-steps' }, isIOS ? [
+      installStep('share', 'No Safari, toque no botão Compartilhar.'),
+      installStep('plus', 'Escolha "Adicionar à Tela de Início".'),
+    ] : [
+      installStep('menu', 'No Chrome, toque no menu (3 pontinhos).'),
+      installStep('plus', 'Escolha "Instalar app" ou "Adicionar à tela inicial".'),
+    ]));
+  }
+  return card;
 }
 
 // ---------- TELA 1: concursos ----------
@@ -126,6 +243,9 @@ function renderHome() {
     })(),
   ]));
 
+  const hint = installHint();
+  if (hint) body.appendChild(hint);
+
   // passo-a-passo: aberto para quem chega pela 1ª vez, recolhido para quem já usa
   if (concursos.length) {
     body.appendChild(el('details', { class: 'card how-to' }, [
@@ -142,17 +262,20 @@ function renderHome() {
   if (concursos.length) {
     const lista = el('section', { class: 'stack' }, [el('h3', { class: 'section-title' }, ['Concursos'])]);
     for (const c of concursos) {
+      const emAndamento = c.status === 'sorteando';
       lista.appendChild(el('div', { class: 'card list-item', onclick: () => go(`/c/${c.id}`) }, [
-        el('div', {}, [
+        el('div', { class: 'ci-lead' }, [icon('grid', { size: 22 })]),
+        el('div', { class: 'ci-body' }, [
           el('strong', {}, [c.nome]),
-          el('div', { class: 'muted small' }, [
-            `${c.cartelas.length} cartela(s) · ${c.sorteados.length} sorteado(s) · ${c.status === 'sorteando' ? 'em andamento' : 'preparando'}`,
+          el('div', { class: 'ci-meta muted small' }, [
+            el('span', { class: `ci-status ${emAndamento ? 'live' : ''}` }, [emAndamento ? 'em andamento' : 'preparando']),
+            el('span', {}, [`${c.cartelas.length} cartela(s) · ${c.sorteados.length} sorteado(s)`]),
           ]),
         ]),
         el('button', { class: 'icon-btn danger', onclick: (e) => {
           e.stopPropagation();
           if (confirm(`Excluir "${c.nome}"?`)) { store.deleteConcurso(c.id); renderHome(); }
-        }, 'aria-label': 'Excluir' }, ['🗑']),
+        }, 'aria-label': 'Excluir' }, [icon('trash', { size: 18 })]),
       ]));
     }
     body.appendChild(lista);
@@ -171,8 +294,8 @@ function renderConcurso(id) {
   const body = el('main', { class: 'container' });
 
   body.appendChild(el('section', { class: 'grid-2' }, [
-    el('button', { class: 'btn btn-primary tall', onclick: () => go(`/c/${id}/scan`) }, ['📷', el('span', {}, ['Escanear cartela'])]),
-    el('button', { class: 'btn btn-secondary tall', onclick: () => go(`/c/${id}/manual`) }, ['✏️', el('span', {}, ['Adicionar manual'])]),
+    el('button', { class: 'btn btn-primary tall', onclick: () => go(`/c/${id}/scan`) }, [icon('camera', { size: 26 }), el('span', {}, ['Escanear cartela'])]),
+    el('button', { class: 'btn btn-secondary tall', onclick: () => go(`/c/${id}/manual`) }, [icon('edit', { size: 26 }), el('span', {}, ['Adicionar manual'])]),
   ]));
 
   body.appendChild(el('h3', { class: 'section-title' }, [`Cartelas (${c.cartelas.length})`]));
@@ -199,7 +322,7 @@ function renderConcurso(id) {
       store.saveConcurso(c);
       go(`/c/${id}/sorteio`);
     },
-  }, [c.sorteados.length ? '▶ Continuar sorteio' : '▶ Iniciar sorteio']));
+  }, [icon('play', { size: 16 }), c.sorteados.length ? 'Continuar sorteio' : 'Iniciar sorteio']));
 
   app.appendChild(body);
 }
@@ -209,8 +332,8 @@ function cartelaPreview(concurso, cartela, { onEdit, onRemove, drawnSet } = {}) 
   wrap.appendChild(el('div', { class: 'cartela-head' }, [
     el('strong', {}, [cartela.apelido]),
     el('div', { class: 'cartela-actions' }, [
-      onEdit ? el('button', { class: 'icon-btn', onclick: onEdit, 'aria-label': 'Editar' }, ['✏️']) : null,
-      onRemove ? el('button', { class: 'icon-btn danger', onclick: onRemove, 'aria-label': 'Remover' }, ['🗑']) : null,
+      onEdit ? el('button', { class: 'icon-btn', onclick: onEdit, 'aria-label': 'Editar' }, [icon('edit', { size: 18 })]) : null,
+      onRemove ? el('button', { class: 'icon-btn danger', onclick: onRemove, 'aria-label': 'Remover' }, [icon('trash', { size: 18 })]) : null,
     ]),
   ]));
   wrap.appendChild(bingoHeaderRow());
@@ -249,17 +372,24 @@ function gridEditor(initialGrid, apelidoInicial) {
 
   const statusLine = el('div', { class: 'grid-status' });
 
-  // legenda de faixas por coluna
-  container.appendChild(el('div', { class: 'col-legend' },
-    COL_LABELS.map((l, i) => el('span', {}, [`${l}`, el('small', {}, [`${COL_RANGES[i][0]}-${COL_RANGES[i][1]}`])]))
-  ));
+  // cabeçalho B-I-N-G-O + ajuda dinâmica da coluna
+  const headerRow = el('div', { class: 'bingo-header edit-header' }, COL_LABELS.map((l, i) => el('span', { 'data-col': String(i) }, [l])));
+  const helper = el('div', { class: 'edit-helper' }, ['Toque numa casa e digite o número.']);
+  function setActiveCol(col) {
+    headerRow.classList.toggle('active-col', col != null);
+    headerRow.querySelectorAll('span').forEach((s) => s.classList.toggle('active', Number(s.dataset.col) === col));
+    helper.textContent = col == null
+      ? 'Toque numa casa e digite o número.'
+      : `Coluna ${COL_LABELS[col]} aceita de ${COL_RANGES[col][0]} a ${COL_RANGES[col][1]}.`;
+  }
 
+  const cells = []; // { inp, r, c }: só as casas editáveis (sem o FREE)
   const gridNode = el('div', { class: 'edit-grid' });
   for (let r = 0; r < ROWS; r++) {
     for (let cc = 0; cc < COLS; cc++) {
       if (r === CENTER.r && cc === CENTER.c) {
         state.grid[r][cc] = FREE;
-        gridNode.appendChild(el('div', { class: 'cell-input cell-free' }, ['FREE']));
+        gridNode.appendChild(el('div', { class: 'cell-input cell-free' }, ['★']));
         continue;
       }
       const val = state.grid[r][cc];
@@ -270,35 +400,60 @@ function gridEditor(initialGrid, apelidoInicial) {
       });
       inp.addEventListener('input', () => {
         inp.value = inp.value.replace(/\D/g, '').slice(0, 2);
-        const n = inp.value ? parseInt(inp.value, 10) : null;
-        state.grid[r][cc] = n;
-        colorCell(inp, n, cc);
+        state.grid[r][cc] = inp.value ? parseInt(inp.value, 10) : null;
+        recolor();
         updateStatus();
       });
-      inp.addEventListener('blur', () => colorCell(inp, state.grid[r][cc], cc));
-      colorCell(inp, val, cc);
+      inp.addEventListener('focus', () => setActiveCol(cc));
+      inp.addEventListener('blur', () => { recolor(); setActiveCol(null); });
+      cells.push({ inp, r, c: cc });
       gridNode.appendChild(inp);
     }
   }
 
-  function colorCell(inp, n, col) {
-    if (!inp.classList) return;
+  // números que aparecem mais de uma vez na cartela
+  function dupSet() {
+    const seen = new Set(), dup = new Set();
+    for (const n of gridNumbers(state.grid)) { if (seen.has(n)) dup.add(n); seen.add(n); }
+    return dup;
+  }
+
+  // uma casa está errada se: fora de 1-75, coluna errada, ou número repetido
+  function cellError(n, col, dup) {
+    if (typeof n !== 'number') return false;
+    return n < 1 || n > 75 || columnFor(n) !== col || dup.has(n);
+  }
+
+  function colorCell(inp, n, col, dup) {
     inp.classList.remove('cell-ok', 'cell-warn', 'cell-empty');
-    if (n == null || typeof n !== 'number') { inp.classList.add('cell-empty'); return; }
-    if (n < 1 || n > 75 || columnFor(n) !== col) inp.classList.add('cell-warn');
-    else inp.classList.add('cell-ok');
+    if (typeof n !== 'number') { inp.classList.add('cell-empty'); return; }
+    inp.classList.add(cellError(n, col, dup) ? 'cell-warn' : 'cell-ok');
+  }
+
+  function recolor() {
+    const dup = dupSet();
+    for (const { inp, r, c } of cells) colorCell(inp, state.grid[r][c], c, dup);
+  }
+
+  // há alguma casa em vermelho? (repetido ou fora da faixa): impede salvar
+  function hasCellErrors() {
+    const dup = dupSet();
+    return cells.some(({ r, c }) => cellError(state.grid[r][c], c, dup));
   }
 
   function updateStatus() {
     const nums = gridNumbers(state.grid);
-    const { valid, errors } = validateGrid(state.grid);
+    const erro = hasCellErrors();
     statusLine.innerHTML = '';
-    statusLine.appendChild(el('span', { class: `chip ${valid ? 'chip-ok' : 'chip-warn'}` }, [`${nums.length}/24 números`]));
-    if (!valid && errors.length) statusLine.appendChild(el('span', { class: 'muted small' }, [errors[0]]));
+    statusLine.appendChild(el('span', { class: `chip ${!erro && nums.length === 24 ? 'chip-ok' : 'chip-warn'}` }, [`${nums.length}/24 números`]));
+    if (erro) statusLine.appendChild(el('span', { class: 'chip chip-warn' }, ['casas em vermelho: repetido ou fora da faixa']));
   }
+  recolor();
   updateStatus();
 
+  container.appendChild(headerRow);
   container.appendChild(gridNode);
+  container.appendChild(helper);
   container.appendChild(statusLine);
   container.appendChild(apInput);
 
@@ -306,6 +461,7 @@ function gridEditor(initialGrid, apelidoInicial) {
     node: container,
     getGrid: () => state.grid.map((r) => r.slice()),
     getApelido: () => state.apelido,
+    hasCellErrors,
   };
 }
 
@@ -316,7 +472,7 @@ function renderManual(id) {
   clear();
   app.appendChild(header('Nova cartela', `/c/${id}`));
   const body = el('main', { class: 'container' });
-  body.appendChild(el('p', { class: 'muted' }, ['Digite os números coluna por coluna. B: 1-15, I: 16-30, N: 31-45, G: 46-60, O: 61-75. O centro é FREE.']));
+  body.appendChild(el('p', { class: 'muted small' }, ['Preencha coluna por coluna. Toque numa casa para ver a faixa aceita. O centro é FREE.']));
   const editor = gridEditor(emptyGrid());
   body.appendChild(editor.node);
   body.appendChild(el('button', { class: 'btn btn-success btn-block big', onclick: () => saveFromEditor(id, editor) }, ['Salvar cartela']));
@@ -324,9 +480,10 @@ function renderManual(id) {
 }
 
 function saveFromEditor(id, editor) {
+  if (editor.hasCellErrors()) return toast('Corrija as casas em vermelho antes de salvar (número repetido ou fora da faixa).', 'warn');
   const grid = editor.getGrid();
   const { valid, errors } = validateGrid(grid);
-  if (!valid && !confirm(`A cartela tem avisos:\n\n- ${errors.slice(0, 4).join('\n- ')}\n\nSalvar mesmo assim?`)) return;
+  if (!valid && !confirm(`A cartela ainda está incompleta:\n\n- ${errors.slice(0, 4).join('\n- ')}\n\nSalvar mesmo assim?`)) return;
   store.addCartela(id, grid, editor.getApelido());
   toast('Cartela salva!', 'ok');
   go(`/c/${id}`);
@@ -339,9 +496,10 @@ function openCartelaEditor(id, cartela) {
   const editor = gridEditor(cartela.grid, cartela.apelido);
   body.appendChild(editor.node);
   body.appendChild(el('button', { class: 'btn btn-success btn-block big', onclick: () => {
+    if (editor.hasCellErrors()) return toast('Corrija as casas em vermelho antes de salvar (número repetido ou fora da faixa).', 'warn');
     const grid = editor.getGrid();
     const { valid, errors } = validateGrid(grid);
-    if (!valid && !confirm(`Avisos:\n- ${errors.slice(0, 4).join('\n- ')}\n\nSalvar assim?`)) return;
+    if (!valid && !confirm(`A cartela ainda está incompleta:\n- ${errors.slice(0, 4).join('\n- ')}\n\nSalvar assim?`)) return;
     store.updateCartela(id, cartela.id, { grid, apelido: editor.getApelido() });
     toast('Cartela atualizada!', 'ok');
     renderConcurso(id);
@@ -421,7 +579,7 @@ function renderScan(id) {
       cvs.getContext('2d').drawImage(video, 0, 0);
       stopCam();
       abrirCrop(id, cvs);
-    } }, ['📸 Capturar']);
+    } }, [icon('camera', { size: 20 }), 'Capturar']);
 
     body.appendChild(camWrap);
     body.appendChild(captureBtn);
@@ -436,8 +594,8 @@ function renderScan(id) {
     })();
   }
 
-  body.appendChild(el('button', { class: 'btn btn-secondary btn-block', onclick: () => fileInput.click() }, ['🖼️ Enviar foto da galeria']));
-  body.appendChild(el('button', { class: 'btn btn-ghost btn-block', onclick: () => go(`/c/${id}/manual`) }, ['✏️ Digitar manualmente']));
+  body.appendChild(el('button', { class: 'btn btn-secondary btn-block', onclick: () => fileInput.click() }, [icon('image', { size: 20 }), 'Enviar foto da galeria']));
+  body.appendChild(el('button', { class: 'btn btn-ghost btn-block', onclick: () => go(`/c/${id}/manual`) }, [icon('edit', { size: 20 }), 'Digitar manualmente']));
   body.appendChild(fileInput);
   app.appendChild(body);
 }
@@ -517,8 +675,8 @@ function abrirCrop(id, srcCanvas) {
     renderImage();
     crop.x0 = 0.08; crop.y0 = 0.08; crop.x1 = 0.92; crop.y1 = 0.92;
     updateBox();
-  } }, ['🔄 Girar']);
-  const readBtn = el('button', { class: 'btn btn-primary', onclick: () => ler() }, ['🔎 Ler cartela']);
+  } }, [icon('rotate', { size: 18 }), 'Girar']);
+  const readBtn = el('button', { class: 'btn btn-primary', onclick: () => ler() }, [icon('search', { size: 18 }), 'Ler cartela']);
 
   body.appendChild(el('div', { class: 'grid-2' }, [rotateBtn, readBtn]));
   body.appendChild(progress);
@@ -541,7 +699,7 @@ function abrirCrop(id, srcCanvas) {
       abrirRevisao(id, grid);
     } catch (e) {
       progress.classList.add('hidden'); status.classList.add('hidden');
-      readBtn.disabled = false; rotateBtn.disabled = false; readBtn.textContent = '🔎 Ler cartela';
+      readBtn.disabled = false; rotateBtn.disabled = false; readBtn.replaceChildren(icon('search', { size: 18 }), document.createTextNode('Ler cartela'));
       toast(e.message || 'Falha no OCR.', 'warn');
     }
   }
@@ -551,7 +709,7 @@ function abrirRevisao(id, grid) {
   clear();
   app.appendChild(header('Revisar leitura', `/c/${id}`));
   const body = el('main', { class: 'container' });
-  body.appendChild(el('div', { class: 'notice' }, ['📷 Confira os números lidos e corrija o que estiver errado. Células em vermelho estão fora da faixa da coluna.']));
+  body.appendChild(el('div', { class: 'notice' }, ['Confira os números lidos e corrija o que estiver errado. Células em vermelho estão fora da faixa da coluna.']));
   const editor = gridEditor(grid);
   body.appendChild(editor.node);
   body.appendChild(el('div', { class: 'grid-2' }, [
@@ -566,7 +724,7 @@ function renderSorteio(id) {
   const c = store.getConcurso(id);
   if (!c) return go('/');
   clear();
-  app.appendChild(header(`Sorteio — ${c.nome}`, `/c/${id}`));
+  app.appendChild(header(`Sorteio · ${c.nome}`, `/c/${id}`));
   const body = el('main', { class: 'container sorteio' });
 
   const drawnSet = new Set(c.sorteados);
@@ -574,15 +732,54 @@ function renderSorteio(id) {
 
   const winPanel = el('section', { class: 'win-panel' });
 
-  const numInput = el('input', { class: 'input big-num', type: 'text', inputmode: 'numeric', maxlength: '2', placeholder: '00' });
-  const addBtn = el('button', { class: 'btn btn-primary', onclick: () => sortear() }, ['Sortear']);
-  numInput.addEventListener('input', () => { numInput.value = numInput.value.replace(/\D/g, '').slice(0, 2); });
-  numInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sortear(); });
+  // ---- banner da última bola ----
+  const banner = el('section', { class: 'live-banner' });
+  function renderBanner(novo) {
+    banner.innerHTML = '';
+    const last = ordem.length ? ordem[ordem.length - 1] : null;
+    const pct = Math.round((ordem.length / 75) * 100);
+    banner.appendChild(el('div', { class: `live-ball ${last != null && last === novo ? 'just' : ''}` }, [last != null ? String(last) : '–']));
+    banner.appendChild(el('div', { class: 'live-info' }, [
+      el('div', { class: 'live-title' }, [last != null ? `Última: ${COL_LABELS[columnFor(last)]} ${last}` : 'Comece o sorteio']),
+      el('div', { class: 'live-sub' }, [`${ordem.length} de 75 bolas sorteadas`]),
+    ]));
+    banner.appendChild(ring(pct, { size: 54, stroke: 6, text: `${pct}%` }));
+  }
+
+  // ---- teclado numérico ----
+  let buffer = '';
+  const kpValue = el('span', { class: 'kp-value empty' }, ['–']);
+  function renderBuffer() { kpValue.textContent = buffer || '–'; kpValue.classList.toggle('empty', !buffer); }
+  function pushDigit(d) {
+    const next = buffer + d;
+    buffer = next.length > 2 ? d : next;
+    if (parseInt(buffer, 10) > 75) buffer = d;
+    renderBuffer();
+  }
+  function backspace() { buffer = buffer.slice(0, -1); renderBuffer(); }
+
+  const keypad = el('div', { class: 'keypad' });
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9'].forEach((k) =>
+    keypad.appendChild(el('button', { class: 'key', onclick: () => pushDigit(k) }, [k])));
+  keypad.appendChild(el('button', { class: 'key key-sub', onclick: backspace, 'aria-label': 'Apagar' }, [icon('backspace', { size: 24 })]));
+  keypad.appendChild(el('button', { class: 'key', onclick: () => pushDigit('0') }, ['0']));
+  keypad.appendChild(el('button', { class: 'key key-enter', onclick: () => sortear(), 'aria-label': 'Sortear' }, [icon('check', { size: 26 })]));
 
   const controls = el('section', { class: 'sorteio-controls' }, [
-    el('div', { class: 'row' }, [numInput, addBtn]),
-    el('div', { class: 'muted small' }, ['Digite o número que saiu (1–75) e toque em Sortear, ou use o painel abaixo.']),
+    el('div', { class: 'kp-display' }, [el('span', { class: 'kp-label' }, ['Digite a bola sorteada']), kpValue]),
+    keypad,
   ]);
+
+  // teclado físico (desktop)
+  function onKey(e) {
+    if (/^[0-9]$/.test(e.key)) pushDigit(e.key);
+    else if (e.key === 'Backspace') backspace();
+    else if (e.key === 'Enter') sortear();
+    else return;
+    e.preventDefault();
+  }
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('hashchange', () => window.removeEventListener('keydown', onKey), { once: true });
 
   const board = el('section', { class: 'board board-bingo' });
   // colunas B I N G O, cada uma com 15 números
@@ -616,20 +813,21 @@ function renderSorteio(id) {
 
   const anunciado = new Set(); // cartelas já anunciadas no padrão atual
 
+  body.appendChild(banner);
+  body.appendChild(controls);
   body.appendChild(el('section', { class: 'pattern-picker' }, [
     el('div', { class: 'section-title' }, ['Padrão que vale']),
     patternRow,
     patternDesc,
   ]));
   body.appendChild(winPanel);
-  body.appendChild(controls);
   body.appendChild(ultimos);
-  body.appendChild(el('details', { class: 'board-details' }, [
-    el('summary', {}, ['Painel de números (toque para marcar/desmarcar)']),
-    board,
-  ]));
   body.appendChild(el('h3', { class: 'section-title' }, ['Cartelas']));
   body.appendChild(cartelasLive);
+  body.appendChild(el('details', { class: 'board-details' }, [
+    el('summary', {}, ['Painel de números (toque para marcar ou desmarcar)']),
+    board,
+  ]));
   app.appendChild(body);
 
   function persistAll() { c.sorteados = ordem.slice(); store.saveConcurso(c); }
@@ -653,9 +851,8 @@ function renderSorteio(id) {
   }
 
   function sortear() {
-    const n = parseInt(numInput.value, 10);
-    numInput.value = '';
-    numInput.focus();
+    const n = parseInt(buffer, 10);
+    buffer = ''; renderBuffer();
     if (!Number.isInteger(n) || n < 1 || n > 75) return toast('Número deve ser entre 1 e 75.', 'warn');
     if (drawnSet.has(n)) return toast(`${n} já foi sorteado.`, 'warn');
     drawnSet.add(n); ordem.push(n);
@@ -669,6 +866,7 @@ function renderSorteio(id) {
   }
 
   function refresh(novo) {
+    renderBanner(novo);
     board.querySelectorAll('.ball').forEach((b) => {
       const n = parseInt(b.dataset.n, 10);
       b.classList.toggle('drawn', drawnSet.has(n));
