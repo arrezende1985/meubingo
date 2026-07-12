@@ -18,3 +18,10 @@ yarn-error.log
 _test.mjs
 _t.mjs
 scratchpad/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
