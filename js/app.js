@@ -867,8 +867,11 @@ function renderSorteio(id) {
   const ultimos = el('section', { class: 'ultimos' });
   const cartelasLive = el('section', { class: 'cartela-list' });
 
-  // ---- seletor do padrão de vitória ----
-  let padrao = c.padrao || 'linha';
+  // ---- seletor dos padrões de vitória (um ou mais) ----
+  let padroes = Array.isArray(c.padroes) && c.padroes.length
+    ? c.padroes.filter((k) => PATTERNS[k])
+    : [c.padrao || 'linha'];
+  if (!padroes.length) padroes = ['linha'];
   const patternRow = el('section', { class: 'pattern-row' });
   const patternDesc = el('div', { class: 'pattern-desc muted small' });
 
@@ -876,11 +879,11 @@ function renderSorteio(id) {
     patternRow.innerHTML = '';
     PATTERN_ORDER.forEach((key) => {
       patternRow.appendChild(el('button', {
-        class: `pattern-chip ${padrao === key ? 'active' : ''}`,
-        onclick: () => setPadrao(key),
+        class: `pattern-chip ${padroes.includes(key) ? 'active' : ''}`,
+        onclick: () => togglePadrao(key),
       }, [PATTERNS[key].label]));
     });
-    patternDesc.textContent = `Vale: ${PATTERNS[padrao].desc}`;
+    patternDesc.textContent = `Vale: ${padroes.map((k) => PATTERNS[k].label).join(' · ')}`;
   }
 
   const anunciado = new Set(); // cartelas já anunciadas no padrão atual
@@ -889,7 +892,8 @@ function renderSorteio(id) {
   body.appendChild(ultimos);
   body.appendChild(controls);
   body.appendChild(el('section', { class: 'pattern-picker' }, [
-    el('div', { class: 'section-title' }, ['Padrão que vale']),
+    el('div', { class: 'section-title' }, ['Padrões que valem']),
+    el('div', { class: 'muted small' }, ['Toque para marcar um ou mais.']),
     patternRow,
     patternDesc,
   ]));
@@ -904,20 +908,42 @@ function renderSorteio(id) {
 
   function persistAll() { c.sorteados = ordem.slice(); store.saveConcurso(c); }
 
+  // avalia a cartela contra TODOS os padrões selecionados
+  function matchPatterns(ev) {
+    const labels = [];
+    const keys = [];
+    let cheia = false;
+    for (const key of padroes) {
+      const r = checkPattern(ev, key);
+      if (r.done) {
+        keys.push(key);
+        labels.push(...r.labels);
+        if (key === 'cheia') cheia = true;
+      }
+    }
+    return { done: keys.length > 0, labels, keys, cheia };
+  }
+
   function seedAnunciados() {
     anunciado.clear();
     c.cartelas.forEach((k) => {
       const ev = evaluateCard(k.grid, drawnSet);
-      if (checkPattern(ev, padrao).done) anunciado.add(k.id);
+      if (matchPatterns(ev).done) anunciado.add(k.id);
     });
   }
 
-  function setPadrao(key) {
-    if (key === padrao) return;
-    padrao = key;
-    c.padrao = key;
+  function togglePadrao(key) {
+    if (padroes.includes(key)) {
+      if (padroes.length === 1) return toast('Deixe pelo menos um padrão marcado.', 'warn');
+      padroes = padroes.filter((k) => k !== key);
+    } else {
+      // mantém a ordem canônica dos padrões
+      padroes = PATTERN_ORDER.filter((k) => padroes.includes(k) || k === key);
+    }
+    c.padroes = padroes.slice();
+    c.padrao = padroes[0]; // compatibilidade com versões anteriores
     store.saveConcurso(c);
-    seedAnunciados(); // trocar de padrão não dispara popup dos que já estavam prontos
+    seedAnunciados(); // mudar os padrões não dispara popup dos que já estavam prontos
     renderPatternChips();
     refresh();
   }
@@ -947,21 +973,24 @@ function renderSorteio(id) {
 
     ultimos.innerHTML = '';
     if (ordem.length) {
-      ultimos.appendChild(el('div', { class: 'muted small' }, ['Últimas bolas']));
+      ultimos.appendChild(el('div', { class: 'ultimos-head' }, [
+        el('div', { class: 'muted small' }, ['Últimas bolas']),
+        el('button', { class: 'btn-undo', onclick: undoLast }, [icon('rotate', { size: 15 }), 'Desfazer última']),
+      ]));
       const chips = el('div', { class: 'chips' });
       ordem.slice(-10).reverse().forEach((n, i) => chips.appendChild(el('span', { class: `ball-chip ${i === 0 && n === novo ? 'just' : ''}` }, [String(n)])));
       ultimos.appendChild(chips);
     }
 
     cartelasLive.innerHTML = '';
-    const ehCheia = padrao === 'cheia';
-    const cls = ehCheia ? 'cheia' : 'linha';
     let vencedores = 0;
     c.cartelas.forEach((k) => {
       const ev = evaluateCard(k.grid, drawnSet);
-      const res = checkPattern(ev, padrao);
+      const res = matchPatterns(ev);
+      const cls = res.cheia ? 'cheia' : 'linha';
       if (res.done) vencedores++;
-      const highlight = res.done ? new Set(winningCells(ev, padrao).map(([r, cc]) => `${r},${cc}`)) : null;
+      const highlight = res.done ? new Set() : null;
+      if (res.done) res.keys.forEach((key) => winningCells(ev, key).forEach(([r, cc]) => highlight.add(`${r},${cc}`)));
       const card = el('div', { class: `card cartela-card ${res.done ? 'has-prize prize-' + cls : ''}` });
       card.appendChild(el('div', { class: 'cartela-head' }, [
         el('strong', {}, [k.apelido]),
@@ -970,20 +999,29 @@ function renderSorteio(id) {
       card.appendChild(bingoHeaderRow());
       card.appendChild(renderMiniGrid(k.grid, drawnSet, highlight));
       if (res.done) card.appendChild(el('div', { class: `prize-badge prize-${cls}` }, [
-        ehCheia ? 'CARTELA CHEIA!' : `BINGO! ${res.labels[0] || ''}`,
+        res.cheia ? 'CARTELA CHEIA!' : `BINGO! ${res.labels[0] || ''}`,
       ]));
       cartelasLive.appendChild(card);
 
       if (res.done && !anunciado.has(k.id)) {
         anunciado.add(k.id);
-        anunciarVitoria(k, padrao, res);
+        anunciarVitoria(k, res);
       }
     });
 
     winPanel.innerHTML = '';
     winPanel.appendChild(el('div', { class: 'win-summary win-summary-1' }, [
-      winBadge(`Bateram "${PATTERNS[padrao].label}"`, vencedores),
+      winBadge('Cartelas premiadas', vencedores),
     ]));
+  }
+
+  function undoLast() {
+    if (!ordem.length) return toast('Nenhuma bola para desfazer.', 'warn');
+    const n = ordem.pop();
+    drawnSet.delete(n);
+    persistAll();
+    refresh();
+    toast(`Bola ${n} desfeita.`, 'ok');
   }
 
   function winBadge(label, count) {
@@ -998,8 +1036,8 @@ function renderSorteio(id) {
   refresh();
 }
 
-function anunciarVitoria(cartela, padraoKey, res) {
-  const cheia = padraoKey === 'cheia';
+function anunciarVitoria(cartela, res) {
+  const cheia = !!(res && res.cheia);
   const overlay = el('div', { class: `win-overlay prize-${cheia ? 'cheia' : 'linha'}` });
   const titulo = cheia ? 'CARTELA CHEIA!' : 'BINGO!';
   const detalhe = (res && res.labels && res.labels[0]) ? ` · ${res.labels[0]}` : '';

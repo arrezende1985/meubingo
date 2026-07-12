@@ -123,7 +123,7 @@ export function bestPrize(ev) {
 export const PATTERNS = {
   linha:      { label: 'Qualquer linha', desc: 'Horizontal, vertical ou diagonal', icon: '≡' },
   horizontal: { label: 'Horizontal', desc: 'Uma linha deitada (5 números)', icon: '—' },
-  vertical:   { label: 'Vertical (coluna)', desc: 'Uma coluna inteira', icon: '|' },
+  vertical:   { label: 'Vertical', desc: 'Uma coluna inteira', icon: '|' },
   diagonal:   { label: 'Diagonal', desc: 'Uma das diagonais', icon: '╲' },
   cantos:     { label: 'Quatro cantos', desc: 'As 4 pontas da cartela', icon: '⁘' },
   cheia:      { label: 'Cartela cheia', desc: 'Todos os 24 números', icon: '▦' },
